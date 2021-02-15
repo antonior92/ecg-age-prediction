@@ -1,0 +1,7 @@
+numpy>=1.14.3
+pandas>=0.22
+h5py>=2.8
+pytorch>=1.2
+tqdm>=4.26
+seaborn>=0.9
+matplotlib>=3.2

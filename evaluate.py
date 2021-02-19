@@ -13,9 +13,9 @@ import pandas as pd
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('--mdl', type=str, default='../model/',
+    parser.add_argument('mdl', type=str,
                         help='folder containing model.')
-    parser.add_argument('--path_to_traces', type=str, default='../data/ecg_tracings.hdf5',
+    parser.add_argument('path_to_traces', type=str, default='../data/ecg_tracings.hdf5',
                         help='path to hdf5 containing ECG traces')
     parser.add_argument('--batch_size', type=int, default=8,
                         help='number of exams per batch.')
@@ -45,7 +45,7 @@ if __name__ == "__main__":
                      dropout_rate=config_dict['dropout_rate'])
     # load model checkpoint
     model.load_state_dict(ckpt["model"])
-    model.to(device)
+    model = model.to(device)
     # Get traces
     ff = h5py.File(args.path_to_traces, 'r')
     traces = ff[args.traces_dset]
@@ -68,7 +68,6 @@ if __name__ == "__main__":
         end = min((i + 1) * args.batch_size, n_total)
         with torch.no_grad():
             x = torch.tensor(traces[start:end, :, :]).transpose(-1, -2)
-            x.requires_grad = True
             x = x.to(device, dtype=torch.float32)
             y_pred = model(x)
         predicted_age[start:end] = y_pred.detach().cpu().numpy().flatten()

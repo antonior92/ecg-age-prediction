@@ -75,7 +75,7 @@ $ python train.py PATH_TO_HDF5 PATH_TO_CSV
 
 - ``evaluate.py``: Script for generating the neural network predictions on a given dataset.
 ```bash
-$ python predict.py PATH_TO_MODEL PATH_TO_HDF5_ECG_TRACINGS --ouput PATH_TO_OUTPUT_FILE 
+$ python predict.py PATH_TO_MODEL PATH_TO_HDF5_ECG_TRACINGS --output PATH_TO_OUTPUT_FILE 
 ```
 
 
@@ -85,6 +85,11 @@ $ python predict.py PATH_TO_MODEL PATH_TO_HDF5_ECG_TRACINGS --ouput PATH_TO_OUTP
 - ``formulate_problem.py``: Script that separate patients into training, validation and 
 ```bash
 $ python predict.py PATH_TO_CSV 
+```
+
+- ``plot_learning_curves.py``: Auxiliary script that plots learning curve of the model.
+```bash
+$ python plot_learning_curves.py PATH_TO_MODEL/history.csv
 ```
 
 OBS: Some scripts depend on the `resnet.py` and `dataloader.py` modules. So we recomend

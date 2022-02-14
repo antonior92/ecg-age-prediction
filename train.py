@@ -3,7 +3,7 @@ import torch
 import os
 from tqdm import tqdm
 from resnet import ResNet1d
-from dataloader import BatchTensors
+from dataloader import BatchDataloader
 import torch.optim as optim
 import numpy as np
 
@@ -105,10 +105,6 @@ if __name__ == "__main__":
                         help='multiplicative factor used to rescale inputs.')
     parser.add_argument('--batch_size', type=int, default=32,
                         help='batch size (default: 32).')
-    parser.add_argument('--valid_split', type=float, default=0.05,
-                        help='fraction of the data used for validation (default: 0.1).')
-    parser.add_argument('--test_split', type=float, default=0.15,
-                        help='fraction of the data kept away for testing in a latter stage (default: 0.1).')
     parser.add_argument('--lr', type=float, default=0.001,
                         help='learning rate (default: 0.001)')
     parser.add_argument("--patience", type=int, default=7,
@@ -129,8 +125,12 @@ if __name__ == "__main__":
                         help='output folder (default: ./out)')
     parser.add_argument('--traces_dset', default='tracings',
                         help='traces dataset in the hdf5 file.')
+    parser.add_argument('--ids_dset', default='',
+                        help='by default consider the ids are just the order')
     parser.add_argument('--age_col', default='age',
                         help='column with the age in csv file.')
+    parser.add_argument('--ids_col', default=None,
+                        help='column with the ids in csv file.')
     parser.add_argument('--cuda', action='store_true',
                         help='use cuda for computations. (default: False)')
     parser.add_argument('--n_valid', type=int, default=100,
@@ -159,21 +159,23 @@ if __name__ == "__main__":
         json.dump(vars(args), f, indent='\t')
 
     tqdm.write("Building data loaders...")
+    # Get csv data
+    df = pd.read_csv(args.path_to_csv, index_col=args.ids_col)
+    ages = df[args.age_col]
     # Get h5 data
     f = h5py.File(args.path_to_traces, 'r')
     traces = f[args.traces_dset]
-    # Get csv data
-    df = pd.read_csv(args.path_to_csv)
-    ages = df[args.age_col]
+    if args.ids_dset:
+        h5ids = f[args.ids_dset]
+        df = df.reindex(h5ids, fill_value=False, copy=True)
     # Train/ val split
-    train_ages, valid_ages = ages[args.n_valid:], ages[:args.n_valid]
-    train_traces, valid_traces = traces[args.n_valid:], traces[:args.n_valid]
+    valid_mask = np.arange(len(df)) <= args.n_valid
+    train_mask = ~valid_mask
     # weights
-    train_weights = compute_weights(train_ages)
-    valid_weights = compute_weights(valid_ages)
+    weights = compute_weights(ages)
     # Dataloader
-    train_loader = BatchTensors(train_traces, train_ages, train_weights, bs=args.batch_size)
-    valid_loader = BatchTensors(valid_traces, valid_ages, valid_weights, bs=args.batch_size)
+    train_loader = BatchDataloader(traces, ages, weights, bs=args.batch_size, mask=train_mask)
+    valid_loader = BatchDataloader(traces, ages, weights, bs=args.batch_size, mask=valid_mask)
     tqdm.write("Done!")
 
     tqdm.write("Define model...")

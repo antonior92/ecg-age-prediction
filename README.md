@@ -48,7 +48,7 @@ The code training and evaluation is implemented in Python, contains
 
 ## Model
 
-The model used in the paper is a residual neural. The neural network architecture implementation 
+The model used in the paper is a residual neural network. The architecture implementation 
 in pytorch is available in `resnet.py`. It follows closely 
 [this architecture](https://www.nature.com/articles/s41467-020-15432-4), except that there is no sigmoid at the last layer.
 
